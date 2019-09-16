@@ -1,8 +1,8 @@
-{-# LANGUAGE OverloadedStrings  #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Database.Words where
 
-import qualified Data.List as L
+import qualified Data.List                      as L
 import           Data.Text
 import           Database.Connections
 import           Database.SQLite.Simple
@@ -10,8 +10,8 @@ import           Database.SQLite.Simple.FromRow
 
 data Lexi =
   Lexi
-    { id :: Int
-    , value :: Text
+    { id         :: Int
+    , value      :: Text
     , annotation :: Text
     }
 
@@ -37,12 +37,12 @@ exists lexi = queryWithConn "tr-en.db" existsWord
     executeSelect conn = query conn "SELECT 1 FROM words WHERE word = ?" (Only lexi) :: IO [Int]
 
 findWord :: Text -> IO (Maybe Lexi)
-findWord lexi = queryWithConn "tr-en.db" findWord
+findWord lexi = queryWithConn "tr-en.db" executeQuery
   where
-    findWord conn = executeQuery conn >>= maybeHead
-    executeQuery conn = query conn "SELECT * FROM words WHERE word = ?" (Only lexi) :: IO [Lexi]
-    maybeHead [] = return Nothing
-    maybeHead (x:_) = return (Just x)
+    executeQuery conn  = executeSelect conn >>= maybeHead
+    executeSelect conn = query conn "SELECT * FROM words WHERE word = ?" (Only lexi) :: IO [Lexi]
+    maybeHead []       = return Nothing
+    maybeHead (x:_)    = return (Just x)
 
 addWord :: Text -> Text -> IO ()
 addWord lexi annotation = executeWithConn "tr-en.db" executeInsert
