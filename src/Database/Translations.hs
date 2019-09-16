@@ -57,7 +57,7 @@ findTranslationsForWord wordId = queryWithConn "tr-en.db" executeQuery
 addTranslation :: Int -> Text -> IO ()
 addTranslation wordId translation = executeWithConn "tr-en.db" executeInsert
   where
-    executeInsert conn = execute conn "INSERT INTO translations (word_id, translation) VALUES (?,?)" (wordId, translation)
+    executeInsert conn = execute conn insertQuery (wordId, translation)
 
 select1ByWordIdQuery :: Query
 select1ByWordIdQuery = "SELECT 1 FROM translations WHERE word_id = ?"
@@ -70,3 +70,6 @@ selectByWordIdQuery = "SELECT * FROM translations WHERE word_id = ?"
 
 selectByWordQuery :: Query
 selectByWordQuery = "SELECT * FROM translations t INNER JOIN words w ON t.word_id = w.id WHERE w.word = ?"
+
+insertQuery :: Query
+insertQuery = "INSERT INTO translations (word_id, translation) VALUES (?,?)"
