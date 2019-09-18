@@ -3,7 +3,7 @@
 module Main where
 
 import           Data.Text
-import           Vocabulary
+import           Control.Vocabulary
 
 data Command =
   Command
