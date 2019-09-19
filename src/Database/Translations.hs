@@ -16,9 +16,7 @@ data Translation =
     }
 
 instance Show Translation where
-  show tr = mconcat
-    [ unpack $ translation tr
-    ]
+  show tr = mconcat [unpack $ translation tr]
 
 instance FromRow Translation where
   fromRow = Translation <$> field
@@ -48,17 +46,23 @@ findTranslationsForWordId wordId = queryWithConn "tr-en.db" executeQuery
   where
     executeQuery conn = query conn selectByWordIdQuery (Only wordId) :: IO [Translation]
 
--- | find translations for the given word id
-findTranslationsForWord :: Int -> IO [Translation]
-findTranslationsForWord wordId = queryWithConn "tr-en.db" executeQuery
+-- | find translations for the given word
+findTranslationsForWord :: Text -> IO [Translation]
+findTranslationsForWord word = queryWithConn "tr-en.db" executeQuery
   where
-    executeQuery conn = query conn selectByWordQuery (Only wordId) :: IO [Translation]
+    executeQuery conn = query conn selectByWordQuery (Only word) :: IO [Translation]
 
 -- | add new translation to the word with the given id
-addTranslation :: Int -> Text -> IO ()
-addTranslation wordId translation = executeWithConn "tr-en.db" executeInsert
+addTranslationForWordId :: Int -> Text -> IO ()
+addTranslationForWordId wordId translation = executeWithConn "tr-en.db" executeInsert
   where
-    executeInsert conn = execute conn insertQuery (wordId, translation)
+    executeInsert conn = execute conn insertQueryForWordId (wordId, translation)
+
+-- | add new translation to the word with the given
+addTranslationForWord :: Text -> Text -> IO ()
+addTranslationForWord word translation = executeWithConn "tr-en.db" executeInsert
+  where
+    executeInsert conn = execute conn insertQueryForWord (word, translation)
 
 -- | queries
 -- |
@@ -74,5 +78,8 @@ selectByWordIdQuery = "SELECT * FROM translations WHERE word_id = ?"
 selectByWordQuery :: Query
 selectByWordQuery = "SELECT * FROM translations t INNER JOIN words w ON t.word_id = w.id WHERE w.word = ?"
 
-insertQuery :: Query
-insertQuery = "INSERT INTO translations (word_id, translation) VALUES (?,?)"
+insertQueryForWordId :: Query
+insertQueryForWordId = "INSERT INTO translations (word_id, translation) VALUES (?,?)"
+
+insertQueryForWord :: Query
+insertQueryForWord = "INSERT INTO translations (word_id, translation) VALUES (SELECT id FROM words where word = ?, ?)"

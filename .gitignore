@@ -1,5 +1,6 @@
 .idea/
 .stack-work/
+out/
 havoc.cabal
 *.lock
 *~
