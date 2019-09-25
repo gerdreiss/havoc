@@ -37,6 +37,12 @@ exists lexi = queryWithConn "tr-en.db" existsWord
     existsWord conn = executeSelect conn >>= \res -> return $ L.null res
     executeSelect conn = query conn select1ByWordQuery (Only lexi) :: IO [Int]
 
+-- | retrieve all words
+list :: IO [Lexi]
+list = queryWithConn "tr-en.db" executeSelect
+  where
+    executeSelect conn = query_ conn selectAllQuery :: IO [Lexi]
+
 -- | find the database entry for the given word
 findWord :: Text -> IO (Maybe Lexi)
 findWord lexi = queryWithConn "tr-en.db" executeQuery
@@ -55,6 +61,9 @@ addWord lexi annotation = executeWithConn "tr-en.db" executeInsert
 -- | query constants
 select1ByWordQuery :: Query
 select1ByWordQuery = "SELECT 1 FROM words WHERE word = ?"
+
+selectAllQuery :: Query
+selectAllQuery = "SELECT * FROM words"
 
 selectByWordQuery :: Query
 selectByWordQuery = "SELECT * FROM words WHERE word = ?"
