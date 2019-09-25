@@ -1,22 +1,28 @@
-{-# LANGUAGE OverloadedStrings  #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Main where
 
-import           Data.Text
 import           Control.Vocabulary
+import qualified Data.List          as L
+import qualified Data.Text          as T
+import           System.Environment
 
-data Command =
-  Command
-    { name :: Text
-    , args :: [Text]
-    }
+data Command = Command
+  { name :: T.Text
+  , args :: [T.Text]
+  }
 
 execute :: Command -> IO ()
 execute command
-  | name command == "add" = putStrLn "Adding new word..."
-  | name command == "update" = putStrLn "Updating a word..."
-  | name command == "get" = putStrLn "Retrieving translations for a word..."
-  | name command == "list" = putStrLn "Listing all words..."
+  | name command == "add" = putStrLn "Yeni kelime ekleme..."
+  | name command == "update" = putStrLn "Bir kelimeyi güncelleme..."
+  | name command == "get" = putStrLn "Bir kelime için çevirileri alma..."
+  | name command == "list" = putStrLn "Tüm kelimeleri listelemek..."
+  | otherwise = putStrLn "Tam olarak ne istiyorsun?..."
 
 main :: IO ()
-main = putStrLn "FPFTW!"
+main = do
+  args <- getArgs
+  case args of
+    (x:xs) -> execute Command {name = T.pack x, args = map T.pack xs}
+    _      -> execute Command {name = "que", args = mempty}
