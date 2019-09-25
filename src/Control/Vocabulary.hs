@@ -6,6 +6,7 @@ import           Control.Monad
 import           Data.Foldable
 import           Data.Maybe
 import qualified Data.Text             as Tx
+import qualified Database.DDL          as DDL
 import qualified Database.Translations as Ts
 import qualified Database.Words        as W
 
@@ -52,3 +53,7 @@ add w = W.addWord (word w) (annotation w) >> traverse_ (Ts.addTranslationForWord
 -- attempts to update the vocabulary
 update :: Lexi -> IO ()
 update _ = pure ()
+
+-- / initializes the database
+init :: Tx.Text -> IO ()
+init = DDL.init

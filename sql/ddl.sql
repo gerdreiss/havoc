@@ -4,7 +4,7 @@ DROP TABLE IF EXISTS translations;
 CREATE TABLE words (
     id INTEGER PRIMARY KEY,
     word TEXT NOT NULL UNIQUE,
-    annotation TEXT,
+    annotation TEXT
 );
 
 CREATE TABLE translations (

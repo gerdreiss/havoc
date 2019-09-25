@@ -14,11 +14,16 @@ data Command = Command
 
 execute :: Command -> IO ()
 execute command
+  | name command == "init" = initV $ args command
   | name command == "add" = add $ args command -- putStrLn "Yeni kelime ekleme..."
   | name command == "update" = update $ args command -- putStrLn "Bir kelimeyi güncelleme..."
   | name command == "get" = get $ args command -- putStrLn "Bir kelime için çevirileri alma..."
   | name command == "list" = list -- putStrLn "Tüm kelimeleri listelemek..."
   | otherwise = putStrLn "Tam olarak ne istiyorsun?..."
+
+initV :: [T.Text] -> IO ()
+initV [] = putStrLn "Adı unuttun mu?"
+initV (name:_) = V.init name
 
 add :: [T.Text] -> IO ()
 add (w:ts) = V.add $ V.lexi w ts
