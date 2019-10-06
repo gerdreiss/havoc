@@ -26,7 +26,7 @@ instance Show Lexi where
     ]
 
 lexi :: Tx.Text -> [Tx.Text] -> Lexi
-lexi w ts = Lexi {word = w, translations = ts, annotation = ""}
+lexi w ts = Lexi { word = w, translations = ts, annotation = "" }
 
 -- checks whether the given word exists in the vocabulary
 exists :: Tx.Text -> IO Bool
@@ -39,8 +39,11 @@ get w = do
   guard (isJust maybeLexi)
   ts <- Ts.findTranslationsForWord w
   return $ fmap (withTranslations ts) maybeLexi
-  where
-    withTranslations txs pw = Lexi {word = W.value pw, translations = map Ts.translation txs, annotation = W.annotation pw}
+ where
+  withTranslations txs pw = Lexi { word         = W.value pw
+                                 , translations = map Ts.translation txs
+                                 , annotation   = W.annotation pw
+                                 }
 
 -- attempts to retrıeve all words from the vocabulary w/o translations
 list :: IO [Tx.Text]
@@ -48,7 +51,11 @@ list = map W.value <$> W.list
 
 -- attempts to add the given Lexi to the vocabulary
 add :: Lexi -> IO ()
-add w = W.addWord (word w) (annotation w) >> traverse_ (Ts.addTranslationForWord (word w)) (translations w)
+add w = do
+  W.addWord (word w) (annotation w)
+  maybeLexi <- W.findWord (word w)
+  guard (isJust maybeLexi)
+  traverse_ (Ts.addTranslationForWordId . W.id . fromJust $ maybeLexi) (translations w)
 
 -- attempts to update the vocabulary
 update :: Lexi -> IO ()

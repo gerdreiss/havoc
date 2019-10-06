@@ -2,30 +2,22 @@
 
 module Database.DDL where
 
-import           Data.Text
+import qualified Data.Text                     as T
 import           Database.Connections
 import           Database.SQLite.Simple
-import           Database.SQLite.Simple.FromRow
 
-init :: Text -> IO ()
-init name = executeWithConn "tr-en.db" executeDDL
-  where
-    executeDDL conn = execute_ conn ddl
+init :: T.Text -> IO ()
+init name = executeWithConn filename executeDDL
+ where
+  filename = T.unpack $ T.concat [name, ".db"]
+  executeDDL conn = do
+    execute_ conn ddlWords
+    execute_ conn ddlTranslations
 
-ddl :: Query
-ddl =
-  "DROP TABLE IF EXISTS words;\
-  \DROP TABLE IF EXISTS translations;\
-  \CREATE TABLE words (\
-  \  id INTEGER PRIMARY KEY,\
-  \  word TEXT NOT NULL UNIQUE,\
-  \  annotation TEXT\
-  \);\
-  \\
-  \CREATE TABLE translations (\
-  \  id INTEGER PRIMARY KEY,\
-  \  word_id INTEGER,\
-  \  translation TEXT NOT NULL,\
-  \  FOREIGN KEY(word_id) REFERENCES words(id)\
-  \);\
-  \"
+ddlWords :: Query
+ddlWords =
+  "CREATE TABLE IF NOT EXISTS words (id INTEGER PRIMARY KEY, word TEXT NOT NULL UNIQUE, annotation TEXT)"
+
+ddlTranslations :: Query 
+ddlTranslations =
+  "CREATE TABLE IF NOT EXISTS translations (id INTEGER PRIMARY KEY, word_id INTEGER, translation TEXT NOT NULL, FOREIGN KEY(word_id) REFERENCES words(id))"

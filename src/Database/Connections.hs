@@ -10,7 +10,7 @@ executeWithConn dbName action = do
 
 queryWithConn :: String -> (Connection -> IO a) -> IO a
 queryWithConn dbName query = do
-  conn <- open dbName
+  conn   <- open dbName
   result <- query conn
   close conn
   return result
