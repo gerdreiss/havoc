@@ -9,7 +9,7 @@ import           Database.SQLite.Simple
 init :: T.Text -> IO ()
 init name = executeWithConn filename executeDDL
  where
-  filename = T.unpack $ T.concat [name, ".db"]
+  filename = T.concat [name, ".db"]
   executeDDL conn = do
     execute_ conn ddlWords
     execute_ conn ddlTranslations

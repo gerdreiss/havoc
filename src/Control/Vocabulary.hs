@@ -41,13 +41,13 @@ get w = do
   return $ fmap (withTranslations ts) maybeLexi
  where
   withTranslations txs pw = Lexi { word         = W.value pw
-                                 , translations = map Ts.translation txs
+                                 , translations = fmap Ts.translation txs
                                  , annotation   = W.annotation pw
                                  }
 
 -- attempts to retrıeve all words from the vocabulary w/o translations
 list :: IO [Tx.Text]
-list = map W.value <$> W.list
+list = fmap W.value <$> W.list
 
 -- attempts to add the given Lexi to the vocabulary
 add :: Lexi -> IO ()
