@@ -31,31 +31,35 @@ instance FromRow Int where
   fromRow = field
 
 -- | checks whether the given word exists
-exists :: Text -> IO Bool
-exists lexi = queryWithConn "tr-en.db" existsWord
- where
-  existsWord conn = executeSelect conn >>= \res -> return $ L.null res
-  executeSelect conn = query conn select1ByWordQuery (Only lexi) :: IO [Int]
+exists :: Text -> Text -> IO Bool
+exists db lexi = queryWithConn filename existsWord
+  where
+    filename = databaseFilename db
+    existsWord conn = executeSelect conn >>= \res -> return $ L.null res
+    executeSelect conn = query conn select1ByWordQuery (Only lexi) :: IO [Int]
 
 -- | retrieve all words
-list :: IO [Lexi]
-list = queryWithConn "tr-en.db" executeSelect
+list :: Text -> IO [Lexi]
+list db = queryWithConn filename executeSelect
   where
+    filename = databaseFilename db
     executeSelect conn = query_ conn selectAllQuery :: IO [Lexi]
 
 -- | find the database entry for the given word
-findWord :: Text -> IO (Maybe Lexi)
-findWord lexi = queryWithConn "tr-en.db" executeQuery
- where
-  executeQuery conn  = executeSelect conn >>= maybeHead
-  executeSelect conn = query conn selectByWordQuery (Only lexi) :: IO [Lexi]
-  maybeHead []       = return Nothing
-  maybeHead (x : _)  = return (Just x)
+findWord :: Text -> Text -> IO (Maybe Lexi)
+findWord db lexi = queryWithConn filename executeQuery
+  where
+    filename = databaseFilename db
+    executeQuery conn  = executeSelect conn >>= maybeHead
+    executeSelect conn = query conn selectByWordQuery (Only lexi) :: IO [Lexi]
+    maybeHead []       = return Nothing
+    maybeHead (x : _)  = return (Just x)
 
 -- | add a new word to the database
-addWord :: Text -> Text -> IO ()
-addWord lexi annotation = executeWithConn "tr-en.db" executeInsert
+addWord :: Text -> Text -> Text -> IO ()
+addWord db lexi annotation = executeWithConn filename executeInsert
   where
+    filename = databaseFilename db
     executeInsert conn = execute conn insertWordQuery (toRow (lexi, annotation))
 
 -- | query constants

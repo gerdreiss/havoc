@@ -5,62 +5,62 @@ module Control.Vocabulary where
 import           Control.Monad
 import           Data.Foldable
 import           Data.Maybe
-import qualified Data.Text             as Tx
+import qualified Data.Text             as T
 import qualified Database.DDL          as DDL
-import qualified Database.Translations as Ts
+import qualified Database.Translations as X
 import qualified Database.Words        as W
 
 data Lexi = Lexi
-  { word         :: Tx.Text
-  , translations :: [Tx.Text]
-  , annotation   :: Tx.Text
+  { word         :: T.Text
+  , translations :: [T.Text]
+  , annotation   :: T.Text
   }
 
 instance Show Lexi where
   show lexi = mconcat
-    [ Tx.unpack $ word lexi
+    [ T.unpack $ word lexi
     , " | "
-    , Tx.unpack $ annotation lexi
+    , T.unpack $ annotation lexi
     , "\n"
-    , concatMap Tx.unpack . translations $ lexi
+    , concatMap T.unpack . translations $ lexi
     ]
 
-lexi :: Tx.Text -> [Tx.Text] -> Lexi
+lexi :: T.Text -> [T.Text] -> Lexi
 lexi w ts = Lexi { word = w, translations = ts, annotation = "" }
 
 -- checks whether the given word exists in the vocabulary
-exists :: Tx.Text -> IO Bool
+exists :: T.Text -> T.Text -> IO Bool
 exists = W.exists
 
 -- attempts to retrieve the given word from the vocabulary incl. translations
-get :: Tx.Text -> IO (Maybe Lexi)
-get w = do
-  maybeLexi <- W.findWord w
+get :: T.Text -> T.Text -> IO (Maybe Lexi)
+get db w = do
+  maybeLexi <- W.findWord db w
   guard (isJust maybeLexi)
-  ts <- Ts.findTranslationsForWord w
+  ts <- X.findTranslationsForWord db w
   return $ fmap (withTranslations ts) maybeLexi
  where
   withTranslations txs pw = Lexi { word         = W.value pw
-                                 , translations = fmap Ts.translation txs
+                                 , translations = fmap X.translation txs
                                  , annotation   = W.annotation pw
                                  }
 
 -- attempts to retrıeve all words from the vocabulary w/o translations
-list :: IO [Tx.Text]
-list = fmap W.value <$> W.list
+list :: T.Text -> IO [T.Text]
+list db = fmap W.value <$> W.list db
 
 -- attempts to add the given Lexi to the vocabulary
-add :: Lexi -> IO ()
-add w = do
-  W.addWord (word w) (annotation w)
-  maybeLexi <- W.findWord (word w)
+add :: T.Text -> Lexi -> IO ()
+add db w = do
+  W.addWord db (word w) (annotation w)
+  maybeLexi <- W.findWord db (word w)
   guard (isJust maybeLexi)
-  traverse_ (Ts.addTranslationForWordId . W.id . fromJust $ maybeLexi) (translations w)
+  traverse_ (X.addTranslationForWordId db . W.id . fromJust $ maybeLexi) (translations w)
 
 -- attempts to update the vocabulary
 update :: Lexi -> IO ()
 update _ = pure ()
 
 -- / initializes the database
-init :: Tx.Text -> IO ()
+init :: T.Text -> IO ()
 init = DDL.init

@@ -27,44 +27,48 @@ instance FromRow Int where
   fromRow = field
 
 -- | check whether translations exist for the given word ID
-existForWordId :: Int -> IO Bool
-existForWordId wordId = queryWithConn "tr-en.db" existTranslations
- where
-  existTranslations conn = executeSelect conn >>= \res -> return $ L.null res
-  executeSelect conn = query conn selectByWordIdQuery (Only wordId) :: IO [Int]
+existForWordId :: Text -> Int -> IO Bool
+existForWordId db wordId = queryWithConn filename existTranslations
+  where
+    filename = databaseFilename db
+    existTranslations conn = executeSelect conn >>= \res -> return $ L.null res
+    executeSelect conn = query conn selectByWordIdQuery (Only wordId) :: IO [Int]
 
 -- | check whether translations exist for the given word
-existForWord :: Text -> IO Bool
-existForWord word = queryWithConn "tr-en.db" existTranslations
- where
-  existTranslations conn = executeSelect conn >>= \res -> return $ L.null res
-  executeSelect conn = query conn selectByWordQuery (Only word) :: IO [Int]
+existForWord :: Text -> Text -> IO Bool
+existForWord db word = queryWithConn filename existTranslations
+  where
+    filename = databaseFilename db
+    existTranslations conn = executeSelect conn >>= \res -> return $ L.null res
+    executeSelect conn = query conn selectByWordQuery (Only word) :: IO [Int]
 
 -- | find translations for the given word id
-findTranslationsForWordId :: Int -> IO [Translation]
-findTranslationsForWordId wordId = queryWithConn "tr-en.db" executeQuery
- where
-  executeQuery conn =
-    query conn selectByWordIdQuery (Only wordId) :: IO [Translation]
+findTranslationsForWordId :: Text -> Int -> IO [Translation]
+findTranslationsForWordId db wordId = queryWithConn filename executeQuery
+  where
+    filename = databaseFilename db
+    executeQuery conn = query conn selectByWordIdQuery (Only wordId) :: IO [Translation]
 
 -- | find translations for the given word
-findTranslationsForWord :: Text -> IO [Translation]
-findTranslationsForWord word = queryWithConn "tr-en.db" executeQuery
- where
-  executeQuery conn =
-    query conn selectByWordQuery (Only word) :: IO [Translation]
+findTranslationsForWord :: Text -> Text -> IO [Translation]
+findTranslationsForWord db word = queryWithConn filename executeQuery
+  where
+    filename = databaseFilename db
+    executeQuery conn = query conn selectByWordQuery (Only word) :: IO [Translation]
 
 -- | add new translation to the word with the given id
-addTranslationForWordId :: Int -> Text -> IO ()
-addTranslationForWordId wordId translation = executeWithConn "tr-en.db" executeInsert
- where
-  executeInsert conn = execute conn insertQueryForWordId (toRow (wordId, translation))
+addTranslationForWordId :: Text -> Int -> Text -> IO ()
+addTranslationForWordId db wordId translation = executeWithConn filename executeInsert
+  where
+    filename = databaseFilename db
+    executeInsert conn = execute conn insertQueryForWordId (toRow (wordId, translation))
 
 -- | add new translation to the word with the given
-addTranslationForWord :: Text -> Text -> IO ()
-addTranslationForWord word translation = executeWithConn "tr-en.db" executeInsert
- where
-  executeInsert conn = execute conn insertQueryForWord (toRow (word, translation))
+addTranslationForWord :: Text -> Text -> Text -> IO ()
+addTranslationForWord db word translation = executeWithConn filename executeInsert
+  where
+    filename = databaseFilename db
+    executeInsert conn = execute conn insertQueryForWord (toRow (word, translation))
 
 -- | queries
 -- |
