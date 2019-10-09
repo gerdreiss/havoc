@@ -4,6 +4,7 @@ module Database.Connections where
 
 import qualified Data.Text              as T
 import           Database.SQLite.Simple
+import           System.Environment
 
 executeWithConn :: T.Text -> (Connection -> IO ()) -> IO ()
 executeWithConn dbName action = do
@@ -20,3 +21,5 @@ queryWithConn dbName query = do
 
 databaseFilename :: T.Text -> T.Text
 databaseFilename name = T.concat [name, ".db"]
+
+-- TODO use getEnv to get user's home to store the database file to
