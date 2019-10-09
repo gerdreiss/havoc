@@ -21,7 +21,7 @@ instance Show Lexi where
     [ T.unpack $ word lexi
     , " | "
     , T.unpack $ annotation lexi
-    , "\n"
+    , " | "
     , concatMap T.unpack . translations $ lexi
     ]
 
@@ -37,7 +37,7 @@ get :: T.Text -> T.Text -> IO (Maybe Lexi)
 get db w = do
   maybeLexi <- W.findWord db w
   guard (isJust maybeLexi)
-  ts <- X.findTranslationsForWord db w
+  ts <- X.findTranslationsForWordId db (W.id . fromJust $ maybeLexi)
   return $ fmap (withTranslations ts) maybeLexi
  where
   withTranslations txs pw = Lexi { word         = W.value pw
